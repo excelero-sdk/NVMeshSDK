@@ -7,7 +7,6 @@ setup(
     version='1.1.2',
     author='Excelero, Inc.',
     url='https://github.com/excelero-sdk/NVMeshSDK',
-    download_url='https://github.com/excelero-sdk/NVMeshSDK/archive/v1.1.2.tar.gz',
     license='MIT', 
     description='Excelero NVMesh NVMeshSDK',
     long_description='',
