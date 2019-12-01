@@ -452,6 +452,7 @@ class EndpointRoutes(Enum):
 	USERS = 'users'
 	VOLUMES = 'volumes'
 	VPGS = 'volumeProvisioningGroups'
+	CONFIGURATION_PROFILE = 'configurationProfiles'
 	LOGIN = 'login'
 	INDEX = '/'
 

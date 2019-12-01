@@ -67,7 +67,7 @@ class BaseClassAPI(object):
     # if overridden in the child then delete expects a list of string ids
     # either way the sdk method will accept both
     def delete(self, entitiesList):
-        if not isinstance(entitiesList[0], self.getType()):
+        if len(entitiesList) and not isinstance(entitiesList[0], self.getType()):
             entitiesList = self.getEntitesFromIds(entitiesList)
 
         return self.makePost(['delete'], entitiesList)

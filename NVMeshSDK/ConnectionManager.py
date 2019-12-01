@@ -55,7 +55,7 @@ class ConnectionManager:
             self.setManagementServer(managementServer)
             self.user = user
             self.password = password
-            self.logger = LoggerUtils.getNVMeshSDKLogger('ConnectionManager', logLevel=LoggerUtils.Consts.ManagementLogLevel.INFO)
+            self.logger = LoggerUtils.getNVMeshSDKLogger('ConnectionManager')
             self.session = requests.session()
             self.isAlive()
 

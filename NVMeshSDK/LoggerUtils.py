@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import traceback
+from sys import platform
 
 from logging.handlers import SysLogHandler
 from NVMeshSDK import Consts
@@ -45,7 +46,11 @@ def setOptions(logToSysLog=None, logToStdout=None, logToStderr=None, logLevel=No
 	if logToSysLog is None and _syslogHandler:
 		logger.addHandler(_syslogHandler)
 	elif logToSysLog:
-		_syslogHandler = SysLogHandler(address=Consts.SYSLOG_PATH)
+		if platform == 'darwin':
+			_syslogHandler = SysLogHandler(address='/var/run/syslog', facility='local1')
+		else:
+			_syslogHandler = SysLogHandler(address=Consts.SYSLOG_PATH)
+
 		_syslogHandler.setFormatter(_logging_formatter)
 		_syslogHandler.setLevel(_log_level)
 		logger.addHandler(_syslogHandler)
@@ -75,7 +80,7 @@ def setOptions(logToSysLog=None, logToStdout=None, logToStderr=None, logLevel=No
 def setOptionsDefaults():
 	setOptions(logToSysLog=True, logToStdout=False, logToStderr=False, logLevel=logging.DEBUG, propagate=True, formatString=_default_format)
 
-def getNVMeshSDKLogger(logger_name, *args, **kwargs):
+def getNVMeshSDKLogger(logger_name):
 	name = 'NVMeshSDK.{0}'.format(logger_name)
 	return logging.getLogger(name)
 

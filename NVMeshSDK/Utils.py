@@ -137,6 +137,7 @@ class Utils:
 
 
     @staticmethod
-    def createDirIfNotExists(path):
-        if not os.path.exists(path):
+    def createDirIfNotExsits(path):
+        path = os.path.expanduser(path)
+        if not os.path.isdir(path):
             os.makedirs(path)

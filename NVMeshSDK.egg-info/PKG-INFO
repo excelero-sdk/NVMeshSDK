@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: NVMeshSDK
+Version: 1.1.2
+Summary: Excelero NVMesh NVMeshSDK
+Home-page: https://github.com/excelero-sdk/NVMeshSDK
+Author: Excelero, Inc.
+Author-email: info@excelero.com
+License: MIT
+Download-URL: https://github.com/excelero-sdk/NVMeshSDK/archive/v1.1.2.tar.gz
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 2.7
+Description-Content-Type: text/markdown
