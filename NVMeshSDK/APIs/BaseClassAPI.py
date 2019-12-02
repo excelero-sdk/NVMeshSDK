@@ -1,28 +1,10 @@
-"""
-.. module:: BaseClassAPI
-   :synopsis: All the base API functions are defined here
-.. moduleauthor:: Excelero
-"""
 from NVMeshSDK.ConnectionManager import ConnectionManager, ConnectionManagerError
 from NVMeshSDK.Entities.Entity import Entity
 from NVMeshSDK.Utils import Utils
 
-import re
-
 
 class BaseClassAPI(object):
-    """All the base API functions are defined here."""
     def __init__(self, user=None, password=None):
-        """**Initializes a singleton connection to the management server, by default uses an application user,
-        it is optional to provide a different user and password for the connection.**
-
-        :param user: management user name, defaults to None
-        :type user: str, optional
-        :param password: password for the management user, defaults to None
-        :type password: str, optional
-        :raises ConnectionManagerError: If there was a problem connecting to the management server.
-        """
-
         try:
             if user is not None and password is not None:
                 self.managementConnection = ConnectionManager.getInstance(user=user, password=password)
@@ -33,10 +15,10 @@ class BaseClassAPI(object):
 
     @classmethod
     def getEndpointRoute(cls):
-        return ''
+        pass
 
-    def get(self, page=0, count=0, filter=None, sort=None, projection=None, route=None):
-        routes = ['all'] if route is None else route
+    def get(self, page=0, count=0, filter=None, sort=None, projection=None):
+        routes = ['all']
         query = Utils.buildQueryStr({'filter': filter, 'sort': sort, 'projection': projection})
 
         if page is None and count is None:
@@ -67,7 +49,7 @@ class BaseClassAPI(object):
     # if overridden in the child then delete expects a list of string ids
     # either way the sdk method will accept both
     def delete(self, entitiesList):
-        if len(entitiesList) and not isinstance(entitiesList[0], self.getType()):
+        if not isinstance(entitiesList[0], self.getType()):
             entitiesList = self.getEntitesFromIds(entitiesList)
 
         return self.makePost(['delete'], entitiesList)
@@ -80,22 +62,18 @@ class BaseClassAPI(object):
             payload = objects
 
         try:
-            route = self.createRouteString(routes)
-            err, out = self.managementConnection.post(route, payload)
+            err, out = self.managementConnection.post('/{0}/{1}'.format(self.getEndpointRoute(), '/'.join(routes)), payload)
             return err, out
         except ConnectionManagerError as e:
             raise e
+
 
     def makeGet(self, routes):
         try:
-            route = self.createRouteString(routes)
-            err, out = self.managementConnection.get(route)
+            err, out = self.managementConnection.get('/{0}/{1}'.format(self.getEndpointRoute(), '/'.join(routes)))
             return err, out
         except ConnectionManagerError as e:
             raise e
-
-    def createRouteString(self, routes):
-        return re.sub(r'/*/', '/', '/{0}/{1}'.format(self.getEndpointRoute(), '/'.join(routes)))
 
     def getEntityIds(self, entities, idAttr='_id'):
         if isinstance(entities[0], self.getType()):

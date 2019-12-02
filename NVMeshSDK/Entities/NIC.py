@@ -9,5 +9,5 @@ class NIC(Entity):
 
     @Utils.initializer
     def __init__(self, status=None, pkey=None, nicID=None, mtu=None, version=None, pci_root=None, protocol=None, guid=None,
-                 speed=None, nodeID=None, nodeUUID=None, uuid=None, health=None, missingCounter=None, deviceType=None):
+                 speed=None, nodeID=None, nodeUUID=None, uuid=None, health=None, missingCounter=None):
         pass

@@ -1,10 +1,10 @@
 import json
+import os
 import requests
 import urllib3
 import urlparse
 
 from NVMeshSDK import LoggerUtils
-from NVMeshSDK.Utils import Utils
 
 urllib3.disable_warnings()
 
@@ -50,12 +50,11 @@ class ConnectionManager:
         else:
             ConnectionManager.__instance = self
             self.managementServer = None
-            self.httpRequestTimeout = 60
             self.configFile = configFile
             self.setManagementServer(managementServer)
             self.user = user
             self.password = password
-            self.logger = LoggerUtils.getNVMeshSDKLogger('ConnectionManager')
+            self.logger = LoggerUtils.getInfraClientLogger('ConnectionManager', logLevel=LoggerUtils.Consts.ManagementLogLevel.INFO)
             self.session = requests.session()
             self.isAlive()
 
@@ -66,25 +65,26 @@ class ConnectionManager:
             else:
                 self.managementServers = [managementServers]
         else:
-            self.managementSetConfigs()
+            self.managementReadConfig()
 
-    def managementSetConfigs(self):
-        configs = Utils.readConfFile(self.configFile)
-        if not configs:
+    def managementReadConfig(self):
+        g = {}
+        l = {}
+
+        if not os.path.exists(self.configFile):
             self.managementServers = ['https://localhost:4000']
         else:
-            if 'MANAGEMENT_PROTOCOL' in configs:
-                protocol = configs['MANAGEMENT_PROTOCOL']
+            execfile(self.configFile, g, l)
+
+            if 'MANAGEMENT_PROTOCOL' in l:
+                protocol = l['MANAGEMENT_PROTOCOL']
             else:
                 raise Exception('MANAGEMENT_PROTOCOL variable could not be found in: {0}'.format(self.configFile))
 
-            if 'MANAGEMENT_SERVERS' in configs:
-                servers = configs['MANAGEMENT_SERVERS'].replace('4001', '4000').split(',')
+            if 'MANAGEMENT_SERVERS' in l:
+                servers = l['MANAGEMENT_SERVERS'].replace('4001', '4000').split(',')
             else:
                 raise Exception('MANAGEMENT_SERVERS variable could not be found in: {0}'.format(self.configFile))
-
-            if 'HTTP_REQUEST_TIMEOUT' in configs:
-                self.httpRequestTimeout = configs['HTTP_REQUEST_TIMEOUT']
 
             self.managementServers = []
             for server in servers:
@@ -125,9 +125,9 @@ class ConnectionManager:
         try:
             url = urlparse.urljoin(self.managementServer, route)
             if method == 'post':
-                res = self.session.post(url, json=payload, verify=False, timeout=self.httpRequestTimeout)
+                res = self.session.post(url, json=payload, verify=False)
             elif method == 'get':
-                res = self.session.get(url, params=payload, verify=False, timeout=self.httpRequestTimeout)
+                res = self.session.get(url, params=payload, verify=False)
 
             if '/login' in res.text:
                 self.login()
@@ -137,7 +137,11 @@ class ConnectionManager:
                 else:
                     raise ManagementLoginFailed(iport=url)
 
-        except requests.RequestException as ex:
+        except requests.ConnectionError as ex:
+            # numberOfRetries += 1
+            # if numberOfRetries < 3:
+            #     return self.request(method, route, payload, numberOfRetries)
+            # else:
             raise ManagementTimeout(url, ex.message)
 
         jsonObj = None

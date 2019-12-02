@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-from NVMeshSDK.Utils import Utils
-
 import json
+from NVMeshSDK.Utils import Utils
 import copy
 
 
@@ -42,7 +41,7 @@ class Entity(object):
         return json.loads(json.dumps(obj.__dict__ if not isinstance(obj, dict) else obj, default=lambda x: x.__dict__))
 
     def serialize(self):
-        return Entity.myToDict(self.filterNoneValues())
+        return Entity.myToDict(self.convertStrToCapacityBytes(self.filterNoneValues()))
 
     def deserialize(self):
         self.instantiate()
@@ -60,57 +59,17 @@ class Entity(object):
 
                     setattr(self, entityRep.dbKey, listOfInstances)
                 else:
-                    setattr(self, entityRep.dbKey, entityRep.type(**attrValue))
+                    setattr(self, entityRep.dbKey, entityRep.type(**attrValue)) #entityRep.dbKey))
         return self
+
+    def convertStrToCapacityBytes(self, serializedObj):
+        if 'capacity' in serializedObj:
+            serializedObj['capacity'] = Utils.convertUnitToBytes(serializedObj['capacity'])
+
+        return serializedObj
 
     def filterNoneValues(self):
         return {k: v for k, v in self.__dict__.iteritems() if v is not None}
 
     def getObjectsToInstantiate(self):
         return []
-
-    def isValid(self):
-        status = {'valid': None, 'error': None}
-
-        if not self.__writeEntityToFile():
-            status['error'] = 'Unable to write the entity to a file'
-        else:
-            cmd = [
-                'node',
-                '/opt/NVMesh/management/validator.js',
-                self.pathToSerializedEntityFile,
-                self.getSchemaName()
-            ]
-            stdout, err = Utils.executeLocalCommand(cmd)
-            if err:
-                status['error'] = err
-            else:
-                status = json.loads(stdout)
-
-        delattr(self, 'pathToSerializedEntityFile')
-
-        status['id'] = getattr(self, self.Id.dbKey)
-        status['type'] = self.getSchemaName()
-        return status
-
-    def __writeEntityToFile(self):
-        success = True
-        serializedEntitiesPath = '/opt/NVMesh/cli/NVMeshSDK/Tests/serializedEntities'
-
-        Utils.createDirIfNotExists(path=serializedEntitiesPath)
-
-        self.pathToSerializedEntityFile = '{0}/{1}_{2}.json'.format(serializedEntitiesPath, self.getSchemaName(), getattr(self, self.Id.dbKey))
-
-        try:
-            with open(self.pathToSerializedEntityFile, 'w+') as f:
-                json.dump(Entity.myToDict(self), f)
-
-        except EnvironmentError as e:
-            success = False
-
-        return success
-
-
-    @staticmethod
-    def getSchemaName():
-        pass
