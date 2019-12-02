@@ -452,13 +452,15 @@ class EndpointRoutes(Enum):
 	USERS = 'users'
 	VOLUMES = 'volumes'
 	VPGS = 'volumeProvisioningGroups'
+	CONFIGURATION_PROFILE = 'configurationProfiles'
 	LOGIN = 'login'
 	INDEX = '/'
 
 class CLI:
-	API_SECRETS_FILE = '~/.nvmesh_api_secrets'
-	SSH_SECRETS_FILE = '~/.nvmesh_ssh_secrets'
-	HISTORY_FILE = '~/.nvmesh_cli_history'
+	NVMESH_CLI_FILES_DIR = '~/.nvmesh_cli_files'
+	API_SECRETS_FILE = '{}/nvmesh_api_secrets'.format(NVMESH_CLI_FILES_DIR)
+	SSH_SECRETS_FILE = '{}/nvmesh_ssh_secrets'.format(NVMESH_CLI_FILES_DIR)
+	HISTORY_FILE = '{}/nvmesh_cli_history'.format(NVMESH_CLI_FILES_DIR)
 
 class ControlJobs(Enum):
 	SHUTDOWN_ALL = 'shutdownAll'
@@ -478,6 +480,8 @@ class VolumeDefaults(Enum):
 	STRIPE_SIZE = 32
 	NUMBER_OF_MIRRORS = 1
 
-class ControlJobsScriptCmds(Enum):
-    ATTACH_VOLUMES = 'nvmesh_attach_volumes'
-    DETACH_VOLUMES = 'nvmesh_detach_volumes'
+class ScriptPaths(Enum):
+	ATTACH_VOLUMES = '/usr/bin/nvmesh_attach_volumes'
+	DETACH_VOLUMES = '/usr/bin/nvmesh_detach_volumes'
+	NVMESH_TARGET = '/usr/bin/nvmesh_target'
+

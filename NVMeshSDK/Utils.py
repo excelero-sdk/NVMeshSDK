@@ -1,8 +1,15 @@
 #!/usr/bin/env python
+
 from functools import wraps
 import inspect
 import json
+import subprocess
+import os
+import re
 
+from NVMeshSDK import LoggerUtils
+
+logger = LoggerUtils.getNVMeshSDKLogger('Utils')
 
 class Utils:
 
@@ -14,8 +21,7 @@ class Utils:
         @wraps(func)
         def wrapper(self, *args, **kargs):
             for name, arg in list(zip(names[1:], args)) + list(kargs.items()):
-                if name in names:
-                    setattr(self, name, arg)
+                setattr(self, name, arg)
 
             for name, default in zip(reversed(names), reversed(defaults)):
                 if not hasattr(self, name):
@@ -53,28 +59,27 @@ class Utils:
         return query
 
     @staticmethod
-    def convertUnitToBytes(unit):
-        if type(unit) != str or unit.lower() == 'max':
-            return unit
+    def convertUnitCapacityToBytes(unitCapacity):
+        def getMultipleOfBytesType(unitCapacity):
+            binary = 1024
+            decimal = 1000
+            return binary if 'i' in unitCapacity else decimal
 
-        unitChar = unit[-1:]
-        unit = unit[:-1]
+        def getFactor(termFirstLetter):
+            return {'k': 1, 'm': 2, 'g': 3, 't': 4, 'p': 5}[termFirstLetter]
 
-        if unitChar in 'kK':
-            factor = 1
-        elif unitChar in 'mM':
-            factor = 2
-        elif unitChar in 'gG':
-            factor = 3
-        elif unitChar in 'tT':
-            factor = 4
-        elif unitChar in 'pP':
-            factor = 5
-        else:
-            assert unit, "Invalid capacity unit {}".format(unit)
-            raise ValueError
+        if type(unitCapacity) not in (unicode, str) or unitCapacity.lower() == 'max':
+            return unitCapacity
 
-        return int(unit) * 1024 ** factor
+        unitCapacity = unitCapacity.lower()
+        multipleOfBytesType = getMultipleOfBytesType(unitCapacity)
+
+        search = re.search(r"([0-9]*\.?[0-9]+)(\w+)", unitCapacity)
+        value = search.group(1)
+        term = search.group(2)
+        factor = getFactor(term[:1])
+
+        return float(value) * multipleOfBytesType ** factor
 
     @staticmethod
     def convertBytesToUnit(bytes):
@@ -106,3 +111,33 @@ class Utils:
             division = float(bytes) / float(1024 ** counter)
 
             return str(round(((division * 100) / 100), 2)) + getUnitType(counter)
+
+    @staticmethod
+    def executeLocalCommand(command):
+        try:
+            out = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            stdout, stderr = out.communicate()
+            return stdout, stderr
+        except OSError as e:
+            return None, e
+
+    @staticmethod
+    def readConfFile(confFile):
+        g = {}
+        l = {}
+
+        try:
+            if not os.path.exists(confFile):
+                return False
+            else:
+                execfile(confFile, g, l)
+                return l
+        except Exception:
+            return False
+
+
+    @staticmethod
+    def createDirIfNotExsits(path):
+        path = os.path.expanduser(path)
+        if not os.path.isdir(path):
+            os.makedirs(path)
