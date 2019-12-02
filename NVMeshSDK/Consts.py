@@ -452,7 +452,6 @@ class EndpointRoutes(Enum):
 	USERS = 'users'
 	VOLUMES = 'volumes'
 	VPGS = 'volumeProvisioningGroups'
-	CONFIGURATION_PROFILE = 'configurationProfiles'
 	LOGIN = 'login'
 	INDEX = '/'
 
@@ -480,8 +479,6 @@ class VolumeDefaults(Enum):
 	STRIPE_SIZE = 32
 	NUMBER_OF_MIRRORS = 1
 
-class ScriptPaths(Enum):
-	ATTACH_VOLUMES = '/usr/bin/nvmesh_attach_volumes'
-	DETACH_VOLUMES = '/usr/bin/nvmesh_detach_volumes'
-	NVMESH_TARGET = '/usr/bin/nvmesh_target'
-
+class ControlJobsScriptCmds(Enum):
+    ATTACH_VOLUMES = 'nvmesh_attach_volumes'
+    DETACH_VOLUMES = 'nvmesh_detach_volumes'
