@@ -41,7 +41,7 @@ class Entity(object):
         return json.loads(json.dumps(obj.__dict__ if not isinstance(obj, dict) else obj, default=lambda x: x.__dict__))
 
     def serialize(self):
-        return Entity.myToDict(self.convertStrToCapacityBytes(self.filterNoneValues()))
+        return Entity.myToDict(self.filterNoneValues())
 
     def deserialize(self):
         self.instantiate()
@@ -61,12 +61,6 @@ class Entity(object):
                 else:
                     setattr(self, entityRep.dbKey, entityRep.type(**attrValue)) #entityRep.dbKey))
         return self
-
-    def convertStrToCapacityBytes(self, serializedObj):
-        if 'capacity' in serializedObj:
-            serializedObj['capacity'] = Utils.convertUnitToBytes(serializedObj['capacity'])
-
-        return serializedObj
 
     def filterNoneValues(self):
         return {k: v for k, v in self.__dict__.iteritems() if v is not None}
