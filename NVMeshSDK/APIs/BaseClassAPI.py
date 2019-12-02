@@ -39,8 +39,8 @@ class BaseClassAPI(object):
     def count(self):
         return self.makeGet(['count'])
 
-    def save(self, entitiesList):
-        return self.makePost(['save'], entitiesList)
+    def save(self, entitiesList, postTimeout=None):
+        return self.makePost(['save'], entitiesList, postTimeout)
 
     def update(self, entitiesList):
         return self.makePost(['update'], entitiesList)
@@ -48,13 +48,13 @@ class BaseClassAPI(object):
     # calling delete from here indicates that delete eventually expects a list of id objects
     # if overridden in the child then delete expects a list of string ids
     # either way the sdk method will accept both
-    def delete(self, entitiesList):
+    def delete(self, entitiesList, postTimeout=None):
         if not isinstance(entitiesList[0], self.getType()):
             entitiesList = self.getEntitesFromIds(entitiesList)
 
-        return self.makePost(['delete'], entitiesList)
+        return self.makePost(['delete'], entitiesList, postTimeout)
 
-    def makePost(self, routes, objects):
+    def makePost(self, routes, objects, postTimeout=None):
         isObjects = [issubclass(obj.__class__, Entity) for obj in objects]
         if all(isObjects):
             payload = [obj.serialize() for obj in objects]
@@ -62,7 +62,7 @@ class BaseClassAPI(object):
             payload = objects
 
         try:
-            err, out = self.managementConnection.post('/{0}/{1}'.format(self.getEndpointRoute(), '/'.join(routes)), payload)
+            err, out = self.managementConnection.post('/{0}/{1}'.format(self.getEndpointRoute(), '/'.join(routes)), payload, postTimeout)
             return err, out
         except ConnectionManagerError as e:
             raise e
