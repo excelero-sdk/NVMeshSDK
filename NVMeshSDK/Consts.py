@@ -456,10 +456,9 @@ class EndpointRoutes(Enum):
 	INDEX = '/'
 
 class CLI:
-	NVMESH_CLI_FILES_DIR = '~/.nvmesh_cli_files'
-	API_SECRETS_FILE = '{}/nvmesh_api_secrets'.format(NVMESH_CLI_FILES_DIR)
-	SSH_SECRETS_FILE = '{}/nvmesh_ssh_secrets'.format(NVMESH_CLI_FILES_DIR)
-	HISTORY_FILE = '{}/nvmesh_cli_history'.format(NVMESH_CLI_FILES_DIR)
+	API_SECRETS_FILE = '~/.nvmesh_api_secrets'
+	SSH_SECRETS_FILE = '~/.nvmesh_ssh_secrets'
+	HISTORY_FILE = '~/.nvmesh_cli_history'
 
 class ControlJobs(Enum):
 	SHUTDOWN_ALL = 'shutdownAll'
