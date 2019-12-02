@@ -12,13 +12,13 @@ class ClientAPI(BaseClassAPI):
         'controlJobs': []
     }
 
-    # entity or id
-    def attach(self, volumes, client):
-        return self.__setControlJobs(volumes, client, ControlJobs.ATTACH)
-
-    # entity or id
-    def detach(self, volumes, client):
-        return self.__setControlJobs(volumes, client, ControlJobs.DETACH)
+    # # entity or id
+    # def attach(self, volumes, client):
+    #     return self.__setControlJobs(volumes, client, ControlJobs.ATTACH)
+    #
+    # # entity or id
+    # def detach(self, volumes, client):
+    #     return self.__setControlJobs(volumes, client, ControlJobs.DETACH)
 
     # entity or id
     def delete(self, clients):
