@@ -1,15 +1,11 @@
 #!/usr/bin/env python
-
 from functools import wraps
 import inspect
 import json
-import subprocess
 import os
+import datetime
 import re
 
-from NVMeshSDK import LoggerUtils
-
-logger = LoggerUtils.getNVMeshSDKLogger('Utils')
 
 class Utils:
 
@@ -21,7 +17,8 @@ class Utils:
         @wraps(func)
         def wrapper(self, *args, **kargs):
             for name, arg in list(zip(names[1:], args)) + list(kargs.items()):
-                setattr(self, name, arg)
+                if name in names:
+                    setattr(self, name, arg)
 
             for name, default in zip(reversed(names), reversed(defaults)):
                 if not hasattr(self, name):
@@ -113,15 +110,6 @@ class Utils:
             return str(round(((division * 100) / 100), 2)) + getUnitType(counter)
 
     @staticmethod
-    def executeLocalCommand(command):
-        try:
-            out = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            stdout, stderr = out.communicate()
-            return stdout, stderr
-        except OSError as e:
-            return None, e
-
-    @staticmethod
     def readConfFile(confFile):
         g = {}
         l = {}
@@ -135,6 +123,17 @@ class Utils:
         except Exception:
             return False
 
+    @staticmethod
+    def getTimeoutEndTime(timeout):
+        def addSecs(time, secs):
+            fullDate = datetime.datetime(time.year, time.month, time.day, time.hour, time.minute, time.second)
+            fullDate = fullDate + datetime.timedelta(seconds=secs)
+            return fullDate
+
+        startTime = datetime.datetime.now()
+        endTime = addSecs(startTime, timeout)
+
+        return endTime
 
     @staticmethod
     def createDirIfNotExsits(path):

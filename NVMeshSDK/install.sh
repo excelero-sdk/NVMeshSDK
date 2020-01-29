@@ -3,17 +3,6 @@ set +x
 
 installType=$1
 
-print_help() {
-    echo "usage: "
-    echo "To install the SDK run ./install sdk"
-    echo "To install the CLI run ./install cli"
-}
-
-if [ -z "$installType" ]; then
-    print_help
-    exit 1
-fi
-
 echo "running install.sh, install type is: $installType"
 
 if [ $installType = 'sdk' ];then
@@ -26,14 +15,13 @@ elif [ $installType = 'cli' ];then
     projectDir='NVMeshCLI'
 else
     echo 'Unknown install type, exiting'
-    print_help
-    exit 1
+    exit
 fi
 
 python27=`which python2.7`
 if [ $? -ne 0 ];then
     echo 'python2.7 in not installed, exiting'
-    exit 2
+    exit
 fi
 
 mkdir -p /tmp/$tmpDir/$projectDir
