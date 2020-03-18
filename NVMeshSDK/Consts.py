@@ -476,10 +476,31 @@ class RAIDLevels(Enum):
 	STRIPED_AND_MIRRORED_RAID_10 = 'Striped & Mirrored RAID-10'
 	ERASURE_CODING = 'Erasure Coding'
 
+
 class VolumeDefaults(Enum):
 	STRIPE_SIZE = 32
 	NUMBER_OF_MIRRORS = 1
 
+
 class ControlJobsScriptCmds(Enum):
     ATTACH_VOLUMES = 'nvmesh_attach_volumes'
     DETACH_VOLUMES = 'nvmesh_detach_volumes'
+
+
+class ReservationModes(Enum):
+	NONE = 0
+	SHARED_READ_ONLY = 1
+	SHARED_READ_WRITE = 2
+	EXCLUSIVE_RW = 3
+	INT_TO_MODE = {
+		0: 'NONE',
+		1: 'SHARED_READ_ONLY',
+		2: 'SHARED_READ_WRITE',
+		3: 'EXCLUSIVE_RW'
+	}
+
+
+class AccessLevels(Enum):
+	EXCLUSIVE_RW = 'EXCLUSIVE_RW'
+	SHARED_READ_ONLY = 'SHARED_READ_ONLY'
+	SHARED_READ_WRITE = 'SHARED_READ_WRITE'
