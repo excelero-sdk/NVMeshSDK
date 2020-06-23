@@ -62,7 +62,8 @@ class ConnectionManager:
         else:
             ConnectionManager.__instance = self
             self.logLevel = INFO
-            self.logger = LoggerUtils.getInfraClientLogger('ConnectionManager', logLevel=self.logLevel)
+            self.logger = LoggerUtils.getNVMeshSDKLogger('ConnectionManager')
+            self.logger.setLevel(self.logLevel)
             self.managementServer = None
             self.managementServers = None
             self.httpRequestTimeout = 200
@@ -71,11 +72,12 @@ class ConnectionManager:
             self.maxHttpRequestRetries = 3
             self.maxManagementsRotations = 1
             self.configFile = configFile
+
             if managementServers:
                 self.setManagementServers(managementServers)
 
             self.managementSetConfigs()
-            self.logger.setLevel(self.logLevel)
+            self.logger.setLevel(level=self.logLevel)
             self.currentMgmtIndex = self.getInititalMgmtIndex()
             self.user = user
             self.password = password
@@ -98,9 +100,11 @@ class ConnectionManager:
 
     def managementSetConfigs(self):
         configs = Utils.readConfFile(self.configFile)
-        if not (configs or self.managementServers):
-            self.managementServers = ['https://localhost:4000']
+
+        if not configs:
             self.logger.info('Failed to open the configuration file: {}, all configuration are set to the default.'.format(self.configFile))
+            if not self.managementServers:
+                self.managementServers = ['https://localhost:4000']
         else:
             if not self.managementServers:
                 self.setManagementServersFromConfigs(configs)
@@ -113,6 +117,7 @@ class ConnectionManager:
 
             if 'CONNECTION_MANAGER_DEBUG' in configs and configs['CONNECTION_MANAGER_DEBUG'] == 'Yes':
                 self.logLevel = DEBUG
+            	self.logger.setLevel(self.logLevel)
 
     def setManagementServersFromConfigs(self, configs):
         if 'ALTERNATIVE_MGMT' in configs:
@@ -153,8 +158,8 @@ class ConnectionManager:
 
                 self.getNextMgmtIndex()
 
-        raise ManagementTimeout("Tried isAlive on all Management Servers in rotation for {} rotations and all failed".format(
-                                        self.maxManagementsRotations))
+        raise ManagementTimeout(msg="Tried isAlive on all Management Servers in rotation for {} rotations and all failed".format(
+                                        self.maxManagementsRotations), iport=', '.join(self.managementServers))
 
     def getNextMgmtIndex(self):
         if len(self.managementServers) != 1:
@@ -167,6 +172,7 @@ class ConnectionManager:
         return self.request('get', route, payload)
 
     def request(self, method, route, payload=None, postTimeout=None, numberOfRetries=0):
+            route = Utils.encodePlusInRoute(route)
             self.managementServer = self.managementServers[self.currentMgmtIndex]
             self.logger.debug('Doing request to: {}'.format(self.managementServer))
             try:

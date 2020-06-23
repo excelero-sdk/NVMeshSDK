@@ -97,18 +97,6 @@ class ComponentStatus(Enum):
 	IS_UP         = 'IS_UP'
 	IS_DOWN       = 'IS_DOWN'
 
-class ControlJobs(Enum):
-	TO_BE_ATTACHED = 'toBeAttached'
-	TO_BE_DETACHED = 'toBeDetached'
-
-class RAIDLevels(Enum):
-	LVM_JBOD        = 'LVM/JBOD'
-	RAID0           = 'Striped RAID-0'
-	RAID1           = 'Mirrored RAID-1'
-	RAID10          = 'Striped & Mirrored RAID-10'
-	ERASURE_CODING  = 'Erasure Coding'
-	CONCATENATED    = 'Concatenated'
-
 class EcSeparationTypes(Enum):
 	FULL    = 'Full Separation'
 	MINIMAL = 'Minimal Separation'
@@ -306,17 +294,20 @@ class VolumeStatuses(Enum):
 	PENDING                   = 'pending'
 	ONLINE                    = 'online'
 	OFFLINE                   = 'offline'
-	REBUILDING                = 'rebuilding'
 	DEGRADED                  = 'degraded'
+	UNAVAILABLE               = 'unavailable'
+	QUORUM_FAILED             = 'quorumFailed'
+
+class VolumeActions(Enum):
+	REBUILDING                = 'rebuilding'
 	MARKED_FOR_DELETION       = 'markedForDeletion'
 	MARKED_FOR_REBUILD        = 'markedForRebuild'
 	REBUILD_REQUIRED          = 'rebuildRequired'
 	MARKED_FOR_REBUILD_OLD    = 'markedForRebuild_old'
 	EXTENDING                 = 'extending'
 	INITIALIZING              = 'initializing'
-	UNAVAILABLE               = 'unavailable'
 	TO_BE_DELETED             = 'toBeDeleted'
-	QUORUM_FAILED             = 'quorumFailed'
+	NONE                      = 'none'
 
 class VolumeAttachmentStatus(Enum):
 	BUSY 	      = 1
@@ -452,6 +443,8 @@ class EndpointRoutes(Enum):
 	USERS = 'users'
 	VOLUMES = 'volumes'
 	VPGS = 'volumeProvisioningGroups'
+	CONFIGURATION_PROFILE = 'configurationProfiles'
+	GENERAL_SETTINGS = 'generalSettings'
 	LOGIN = 'login'
 	INDEX = '/'
 
@@ -460,7 +453,17 @@ class CLI:
 	API_SECRETS_FILE = '{}/nvmesh_api_secrets'.format(NVMESH_CLI_FILES_DIR)
 	SSH_SECRETS_FILE = '{}/nvmesh_ssh_secrets'.format(NVMESH_CLI_FILES_DIR)
 	HISTORY_FILE = '{}/nvmesh_cli_history'.format(NVMESH_CLI_FILES_DIR)
+	CAPACITY_HELP_STR = 'The capacity of the allocated volume in bytes. ' \
+						'The number of bytes may be followed by the following multiplicative suffixes: ' \
+						'K/KB =1000, KiB =1024, M/MB =1000^2, MiB =1024^2, G/GB =1000^3, GiB =1024^3, ' \
+						'T/TB =1000^4, TiB =1024^4.{}All the units are case insensitive.'
+	DEFAULT_TIMEOUT = 60
+	PERCENT_FROM_TIMEOUT_TO_VOLUME_POST_REQUEST = 0.8
 	ERROR_CODE = 100
+	CAPACITY_HELP_STR = 'The capacity of the allocated volume in bytes. ' \
+						'The number of bytes may be followed by the following multiplicative suffixes: ' \
+						'K/KB =1000, KiB =1024, M/MB =1000^2, MiB =1024^2, G/GB =1000^3, GiB =1024^3, ' \
+						'T/TB =1000^4, TiB =1024^4.{}All the units are case insensitive.'
 
 class ControlJobs(Enum):
 	SHUTDOWN_ALL = 'shutdownAll'
@@ -480,6 +483,13 @@ class RAIDLevels(Enum):
 class VolumeDefaults(Enum):
 	STRIPE_SIZE = 32
 	NUMBER_OF_MIRRORS = 1
+	EC_STRIPE_WIDTH = 1
+
+class ScriptPaths(Enum):
+	ATTACH_VOLUMES = '/usr/bin/nvmesh_attach_volumes'
+	DETACH_VOLUMES = '/usr/bin/nvmesh_detach_volumes'
+	NVMESH_TARGET = '/usr/bin/nvmesh_target'
+
 
 
 class ControlJobsScriptCmds(Enum):
@@ -491,16 +501,16 @@ class ReservationModes(Enum):
 	NONE = 0
 	SHARED_READ_ONLY = 1
 	SHARED_READ_WRITE = 2
-	EXCLUSIVE_RW = 3
+	EXCLUSIVE_READ_WRITE = 3
 	INT_TO_MODE = {
 		0: 'NONE',
 		1: 'SHARED_READ_ONLY',
 		2: 'SHARED_READ_WRITE',
-		3: 'EXCLUSIVE_RW'
+		3: 'EXCLUSIVE_READ_WRITE'
 	}
 
 
 class AccessLevels(Enum):
-	EXCLUSIVE_RW = 'EXCLUSIVE_RW'
+	EXCLUSIVE_READ_WRITE = 'EXCLUSIVE_READ_WRITE'
 	SHARED_READ_ONLY = 'SHARED_READ_ONLY'
 	SHARED_READ_WRITE = 'SHARED_READ_WRITE'

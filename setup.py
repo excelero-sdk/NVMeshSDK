@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='NVMeshSDK',
-    version="1.4.1",
+    version="2.0.2",
     author='Excelero, Inc.',
     url='https://github.com/excelero-sdk/NVMeshSDK',
     license='MIT', 
