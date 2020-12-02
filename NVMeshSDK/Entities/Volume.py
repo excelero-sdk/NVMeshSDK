@@ -28,6 +28,8 @@ class Volume(Entity):
             * IgnoreNodeSeparation
             * SelectedClientsForNvmf
             * EnableNVMf
+            * EnableCrcCheck
+            * VSGs
     """
     Id = AttributeRepresentation(display='Name', dbKey='name')
     Health = AttributeRepresentation(display='Health', dbKey='health')
@@ -49,6 +51,10 @@ class Volume(Entity):
     SelectedClientsForNvmf = AttributeRepresentation(display='Clients Allowed To Export Via NVMf', dbKey='selectedClientsForNvmf')
     EnableNVMf = AttributeRepresentation(display='Access Via NVMf', dbKey='enableNVMf')
     Action = AttributeRepresentation(display='Action', dbKey='action')
+    EnableCrcCheck = AttributeRepresentation(display='Enable CRC Check', dbKey='enableCrcCheck')
+    LimitByDrive = AttributeRepresentation(display='Limit by drives', dbKey='limitByDisks')
+    LimitByTarget = AttributeRepresentation(display='Limit by targets', dbKey='limitByNodes')
+    VSGs = AttributeRepresentation(display='VSGs', dbKey='VSGs')
     __objectsToInstantiate = ['Chunks', 'Reservation']
 
     @Utils.initializer
@@ -56,7 +62,7 @@ class Volume(Entity):
                  limitByDisks=None, limitByNodes=None, numberOfMirrors=None, createdBy=None, modifiedBy=None, dateModified=None, dateCreated=None, isReserved=None,
                  status=None, blocks=None, chunks=None, stripeSize=None, stripeWidth=None, dataBlocks=None, parityBlocks=None, protectionLevel=None, domain=None,
                  uuid=None, blockSize=None, version=None, type=None, health=None, lockServer=None, reservation=None, ignoreNodeSeparation=None, selectedClientsForNvmf=None,
-                 enableNVMf=None, action=None):
+                 enableNVMf=None, action=None, enableCrcCheck=None, VSGs=None, use_debug_di=None):
         """**Initializes volume entity**
 
                 :param name: the name of the volume
@@ -103,6 +109,10 @@ class Volume(Entity):
                 :type selectedClientsForNvmf: list, optional
                 :param enableNVMf: enables access to the NVMesh volume using the NVMf protocol, defaults to None
                 :type enableNVMf: bool, optional
+                :param enableCrcCheck: enables CRC check, defaults to None
+                :type enableCrcCheck: bool, optional
+                :param VSGs: associated volume security groups, defaults to None
+                :type VSGs: list, optional
         """
         if hasattr(self, 'name'):
             self._id = self.name

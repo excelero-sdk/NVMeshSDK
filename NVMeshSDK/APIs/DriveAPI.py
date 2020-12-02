@@ -1,4 +1,4 @@
-from NVMeshSDK.Entities.Drive import Drive
+from NVMeshSDK.Entities.Target import Target
 from .BaseClassAPI import BaseClassAPI
 from NVMeshSDK.Consts import EndpointRoutes
 
@@ -251,15 +251,12 @@ class DriveAPI(BaseClassAPI):
     def update(self, entitiesList):
         raise NotImplemented
 
-    def count(self):
-        raise NotImplemented
-
     def delete(self, entitiesList):
-        raise NotImplemented
+        return self.deleteDrives(drives=entitiesList)
 
     @classmethod
     def getEndpointRoute(cls):
         return cls.endpointRoute
 
     def getType(self):
-        return Drive
+        return Target

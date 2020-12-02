@@ -6,78 +6,63 @@ import traceback
 from logging.handlers import SysLogHandler
 from NVMeshSDK import Consts
 
-_main_logger = logging.getLogger('NVMeshSDK')
 
-_default_format = '%(name)s[{}]: %(levelname)s: %(message)s'.format(os.getpid())
-_logging_formatter = None
-_log_level = None
-_stdoutHandler = None
-_stderrHandler = None
-_syslogHandler = None
+class Logger(object):
+	def __init__(self, mainLoggerName='NVMeshSDK'):
+		self._mainLoggerName = mainLoggerName
+		self._mainLogger = logging.getLogger(mainLoggerName)
+		self._defaultFormat = '%(name)s[{}]: %(levelname)s: %(message)s'.format(os.getpid())
+		self._isLoggerInitialized = False
+		self._loggerOptions = {
+			'logToSysLog': True,
+			'logToStdout': False,
+			'logToStderr': False,
+			'logLevel': logging.DEBUG,
+			'propagate': True,
+			'formatString': self._defaultFormat,
+			'sysLogAddress': Consts.SYSLOG_PATH
+		}
 
-def getMainLogger():
-	return _main_logger
+	def getLogger(self, loggerName):
+		if not self._isLoggerInitialized:
+			self._configLogger(**self._loggerOptions)
+			self._isLoggerInitialized = True
 
-def setOptions(logToSysLog=None, logToStdout=None, logToStderr=None, logLevel=None, propagate=None, formatString=None):
-	global _main_logger
-	global _syslogHandler
-	global _stderrHandler
-	global _stdoutHandler
-	global _logging_formatter
-	global _log_level
+		return self._mainLogger.getChild(loggerName)
 
-	logger = getMainLogger()
+	def getOptions(self):
+		return self._loggerOptions
 
-	if propagate is not None:
-		logger.propagate = propagate
+	def setOptions(self, **kwargs):
+		self._loggerOptions.update(kwargs)
 
-	if logLevel is not None:
-		logger.setLevel(logLevel)
+	def _configLogger(self, logToSysLog=None, logToStdout=None, logToStderr=None, logLevel=None, propagate=None, formatString=None, sysLogAddress=None):
+		if propagate is not None:
+			self._mainLogger.propagate = propagate
 
-	if formatString is not None:
-		_logging_formatter = logging.Formatter(formatString)
+		if logLevel is not None:
+			self._mainLogger.setLevel(logLevel)
 
-	if logLevel is not None:
-		_log_level = logLevel
+		_logging_formatter = logging.Formatter(formatString) if formatString else None
 
-	logger.handlers = []
+		if logToSysLog:
+			_syslogHandler = SysLogHandler(address=sysLogAddress)
+			_syslogHandler.setFormatter(_logging_formatter)
+			_syslogHandler.setLevel(logLevel)
+			self._mainLogger.addHandler(_syslogHandler)
 
-	if logToSysLog is None and _syslogHandler:
-		logger.addHandler(_syslogHandler)
-	elif logToSysLog:
-		_syslogHandler = SysLogHandler(address=Consts.SYSLOG_PATH)
-		_syslogHandler.setFormatter(_logging_formatter)
-		_syslogHandler.setLevel(_log_level)
-		logger.addHandler(_syslogHandler)
-	else:
-		_syslogHandler = None
+		if logToStdout:
+			_stdoutHandler = logging.StreamHandler(sys.stdout)
+			_stdoutHandler.setFormatter(_logging_formatter)
+			_stdoutHandler.setLevel(logLevel)
+			self._mainLogger.addHandler(_stdoutHandler)
 
-	if logToStdout is None and _stdoutHandler:
-		logger.addHandler(_stdoutHandler)
-	elif logToStdout:
-		_stdoutHandler = logging.StreamHandler(sys.stdout)
-		_stdoutHandler.setFormatter(_logging_formatter)
-		_stdoutHandler.setLevel(_log_level)
-		logger.addHandler(_stdoutHandler)
-	else:
-		_stdoutHandler = None
+		if logToStderr:
+			_stderrHandler = logging.StreamHandler(sys.stderr)
+			_stderrHandler.setFormatter(_logging_formatter)
+			_stderrHandler.setLevel(logLevel)
+			self._mainLogger.addHandler(_stderrHandler)
 
-	if logToStderr is None and _stderrHandler:
-		logger.addHandler(_stderrHandler)
-	elif logToStderr:
-		_stderrHandler = logging.StreamHandler(sys.stderr)
-		_stderrHandler.setFormatter(_logging_formatter)
-		_stderrHandler.setLevel(logging.ERROR)
-		logger.addHandler(_stderrHandler)
-	else:
-		_stderrHandler = None
-
-def setOptionsDefaults():
-	setOptions(logToSysLog=True, logToStdout=False, logToStderr=False, logLevel=logging.DEBUG, propagate=True, formatString=_default_format)
-
-def getNVMeshSDKLogger(logger_name):
-	name = 'NVMeshSDK.{0}'.format(logger_name)
-	return logging.getLogger(name)
 
 def logStackTrace(ex, logger):
 	exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -86,5 +71,3 @@ def logStackTrace(ex, logger):
 
 	for line in errorLines:
 		logger.error(line)
-
-setOptionsDefaults()

@@ -12,7 +12,7 @@ import re
 
 class BaseClassAPI(object):
     """All the base API functions are defined here."""
-    def __init__(self, user=None, password=None):
+    def __init__(self, user=None, password=None, logger=None):
         """**Initializes a singleton connection to the management server, by default uses an application user,
         it is optional to provide a different user and password for the connection.**
 
@@ -25,9 +25,9 @@ class BaseClassAPI(object):
 
         try:
             if user is not None and password is not None:
-                self.managementConnection = ConnectionManager.getInstance(user=user, password=password)
+                self.managementConnection = ConnectionManager.getInstance(user=user, password=password, logger=logger)
             else:
-                self.managementConnection = ConnectionManager.getInstance()
+                self.managementConnection = ConnectionManager.getInstance(logger=logger)
         except ConnectionManagerError as e:
             raise e
 

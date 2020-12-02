@@ -9,10 +9,6 @@ import subprocess
 import os
 import urllib
 
-from NVMeshSDK import LoggerUtils
-
-logger = LoggerUtils.getNVMeshSDKLogger('Utils')
-
 
 class Utils:
 
@@ -93,8 +89,10 @@ class Utils:
                 unitType = 'MiB'
             elif multiplier == 3:
                 unitType = 'GiB'
-            else:
+            elif multiplier == 4:
                 unitType = 'TiB'
+            else:
+                unitType = 'PiB'
 
             return unitType
 

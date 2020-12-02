@@ -26,11 +26,12 @@ class GeneralSettings(Entity):
     sendStatsInterval = AttributeRepresentation(display='Send Statistics Interval', dbKey='sendStatsInterval')
     StatsCollectionSettings = AttributeRepresentation(display='Statistics Collection Settings', dbKey='statsCollectionSettings')
     EnableNVMf = AttributeRepresentation(display='Enable NVMf', dbKey='enableNVMf')
+    EnableMultiTenancy = AttributeRepresentation(display='Enable Multi Tenancy', dbKey='enableMultiTenancy')
 
     @Utils.initializer
     def __init__(self, _id=None, clusterName=None, MAX_JSON_SIZE=None, RESERVED_BLOCKS=None, autoLogOutThreshold=None,
                  cacheUpdateInterval=None, compatibilityMode=None, dateModified=None, daysBeforeLogEntryExpires=None,
                  debugComponents=None, domain=None, enableDistributedRAID=None, enableLegacyFormatting=None, enableZones=None,
                  fullClientReportInterval=None, keepaliveGracePeriod=None, loggingLevel=None, requestStatsInterval=None,
-                 sendStatsInterval=None, statsCollectionSettings=None, enableNVMf=None):
+                 sendStatsInterval=None, statsCollectionSettings=None, enableNVMf=None, enableMultiTenancy=None):
         pass

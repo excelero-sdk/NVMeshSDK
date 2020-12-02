@@ -86,6 +86,18 @@ class ClusterAPI(BaseClassAPI):
         else:
             return err, None
 
+    def _extendedStatus(self):
+        routes = ['getClusterStatus']
+
+        err, out = self.makeGet(routes)
+
+        if out is not None:
+            status = self.getType()(**out)
+            status.deserialize()
+            return None, status
+        else:
+            return err, None
+
     def shutDownClusterNodes(self):
         """**Shut down cluster nodes. --Start the shut down process**
 

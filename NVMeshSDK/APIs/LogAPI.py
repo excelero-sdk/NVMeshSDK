@@ -6,7 +6,7 @@ from NVMeshSDK.Consts import EndpointRoutes
 class LogAPI(BaseClassAPI):
     endpointRoute = EndpointRoutes.LOGS
     
-    def get(self, page=0, count=0, filter=None, sort=None):
+    def get(self, page=0, count=0, filter=None, sort=None, projection=None):
         """**Get logs by page and count, limit the result using filter and sort**
 
         :param filter: Filter before fetching using MongoDB filter objects, defaults to None
@@ -95,7 +95,7 @@ class LogAPI(BaseClassAPI):
                 >>> out
                 None
         """
-        return super(LogAPI, self).get(page=page, count=count, filter=filter, sort=sort)
+        return super(LogAPI, self).get(page=page, count=count, filter=filter, sort=sort, projection=projection)
 
     def getAlerts(self, page=0, count=0, filter=None, sort=None):
         """**Get alerts (errors that hasn't been acknowledged) by page and count, limit the result using filter and sort**
@@ -411,3 +411,11 @@ class LogAPI(BaseClassAPI):
 
     def getType(self):
         return Log
+
+
+class AlertAPI(LogAPI):
+    def count(self):
+        return super(AlertAPI, self).countAlerts()
+
+    def get(self, page=0, count=0, filter=None, sort=None, projection=None):
+        return super(AlertAPI, self).getAlerts(page=page, count=count, filter=filter, sort=sort)

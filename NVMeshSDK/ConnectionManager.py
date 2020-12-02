@@ -4,7 +4,7 @@ import urllib3
 import urlparse
 import random
 import time
-from logging import DEBUG, INFO
+from logging import DEBUG, INFO, WARNING
 
 from NVMeshSDK import LoggerUtils
 from NVMeshSDK.Utils import Utils
@@ -50,20 +50,18 @@ class ConnectionManager:
 
     @staticmethod
     def getInstance(managementServers=None, user=DEFAULT_USERNAME, password=DEFAULT_PASSWORD,
-                 configFile=DEFAULT_NVMESH_CONFIG_FILE):
+                 configFile=DEFAULT_NVMESH_CONFIG_FILE, logger=None):
         if ConnectionManager.__instance is None:
-            ConnectionManager(managementServers, user, password, configFile)
+            ConnectionManager(managementServers, user, password, configFile, logger)
         return ConnectionManager.__instance
 
     def __init__(self, managementServers=None, user=DEFAULT_USERNAME, password=DEFAULT_PASSWORD,
-                 configFile=DEFAULT_NVMESH_CONFIG_FILE):
+                 configFile=DEFAULT_NVMESH_CONFIG_FILE, logger=None):
         if ConnectionManager.__instance is not None:
             raise Exception("This class is a singleton!")
         else:
             ConnectionManager.__instance = self
             self.logLevel = INFO
-            self.logger = LoggerUtils.getNVMeshSDKLogger('ConnectionManager')
-            self.logger.setLevel(self.logLevel)
             self.managementServer = None
             self.managementServers = None
             self.httpRequestTimeout = 200
@@ -77,12 +75,18 @@ class ConnectionManager:
                 self.setManagementServers(managementServers)
 
             self.managementSetConfigs()
-            self.logger.setLevel(level=self.logLevel)
+
+            self.logger = (logger if logger else self.setLogger()).getLogger('ConnectionManager')
             self.currentMgmtIndex = self.getInititalMgmtIndex()
             self.user = user
             self.password = password
             self.session = requests.session()
             self.isAlive()
+
+    def setLogger(self):
+        logger = LoggerUtils.Logger()
+        logger.setOptions(logLevel=self.logLevel)
+        return logger
 
     def getInititalMgmtIndex(self):
         isHA = len(self.managementServers) != 1
@@ -102,7 +106,7 @@ class ConnectionManager:
         configs = Utils.readConfFile(self.configFile)
 
         if not configs:
-            self.logger.info('Failed to open the configuration file: {}, all configuration are set to the default.'.format(self.configFile))
+            print 'Failed to open the configuration file: {}, all configuration are set to the default.'.format(self.configFile)
             if not self.managementServers:
                 self.managementServers = ['https://localhost:4000']
         else:
@@ -117,7 +121,6 @@ class ConnectionManager:
 
             if 'CONNECTION_MANAGER_DEBUG' in configs and configs['CONNECTION_MANAGER_DEBUG'] == 'Yes':
                 self.logLevel = DEBUG
-            	self.logger.setLevel(self.logLevel)
 
     def setManagementServersFromConfigs(self, configs):
         if 'ALTERNATIVE_MGMT' in configs:
@@ -149,14 +152,13 @@ class ConnectionManager:
                 err, out = self.get('/isAlive')
                 return True if not err else False
             except ManagementTimeout as ex:
+                self.getNextMgmtIndex()
                 index += 1
                 currentRotation += 1 if index % len(self.managementServers) == 0 else 0
                 sleepBeforeChangingMgmt = self.randomSleepBeforeChangingMgmt.getValue()
                 self.logger.debug(
                     "failed isAlive to: {0}, exception: {1}, waiting for: {2}s before next request".format(self.managementServer, ex, sleepBeforeChangingMgmt))
                 time.sleep(sleepBeforeChangingMgmt)
-
-                self.getNextMgmtIndex()
 
         raise ManagementTimeout(msg="Tried isAlive on all Management Servers in rotation for {} rotations and all failed".format(
                                         self.maxManagementsRotations), iport=', '.join(self.managementServers))
@@ -172,13 +174,15 @@ class ConnectionManager:
         return self.request('get', route, payload)
 
     def request(self, method, route, payload=None, postTimeout=None, numberOfRetries=0):
+        if numberOfRetries == 0:
             route = Utils.encodePlusInRoute(route)
-            self.managementServer = self.managementServers[self.currentMgmtIndex]
-            self.logger.debug('Doing request to: {}'.format(self.managementServer))
-            try:
-                return self.doRequest(method, route, payload, postTimeout, numberOfRetries)
-            except ManagementTimeout as ex:
-                raise ex
+            
+        self.managementServer = self.managementServers[self.currentMgmtIndex]
+        self.logger.debug('Doing request to: {}'.format(self.managementServer))
+        try:
+            return self.doRequest(method, route, payload, postTimeout, numberOfRetries)
+        except ManagementTimeout as ex:
+            raise ex
 
     def doRequest(self, method, route, payload=None, postTimeout=None, numberOfRetries=0):
         isAliveRoute = route == '/isAlive'
@@ -236,14 +240,23 @@ class ConnectionManager:
             else:
                 self.logger.debug("Request to {0} failed, ex: {1}".format(route, ex))
 
-            if not isAliveRoute and numberOfRetries < self.maxHttpRequestRetries:
+            if isAliveRoute:
+                raise ManagementTimeout(url, ex.message)
+            elif numberOfRetries < self.maxHttpRequestRetries:
                 numberOfRetries += 1
                 sleepTimeBetweenRequestRetry = self.randomSleepBetweenRequests.getValue()
-                self.logger.debug("Got exception: {0}, sleeping for: {1}s then retrying route: {2}".format(ex, sleepTimeBetweenRequestRetry, route))
+                self.logger.debug("Got exception: {0}, sleeping for: {1}s then retrying route: {2}".format(ex,
+                                                                                                           sleepTimeBetweenRequestRetry,
+                                                                                                           route))
                 time.sleep(sleepTimeBetweenRequestRetry)
                 return self.request(method, route, payload, postTimeout, numberOfRetries)
             else:
-                raise ManagementTimeout(url, ex.message)
+                self.logger.debug("Request to {0}, failed {1} times. Trying to change management server.".format(route, self.maxHttpRequestRetries))
+                isAlive = self.isAlive()
+                if not isAlive:
+                    raise ManagementTimeout(url, ex.message)
+                else:
+                    return self.request(method, route, payload, postTimeout, numberOfRetries=0)
 
     @staticmethod
     def handleResponse(res):
