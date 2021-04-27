@@ -30,32 +30,38 @@ else
     exit 1
 fi
 
-python27=`which python2.7`
-if [ $? -ne 0 ];then
-    echo 'python2.7 in not installed, exiting'
-    exit 2
-fi
+for v in 2 3; do
+    pushd .
+    pythonInterpreter=`which python$v`
+    if [ $? -ne 0 ];then
+        echo "python$v in not installed"
+        continiue
+    fi
 
-mkdir -p /tmp/$tmpDir/$projectDir
-whoami=`whoami`
+    echo "------------------------- Installing SDK for python$v"
 
-echo $whoami
-sudo chown -R $whoami:$whoami /tmp/$tmpDir/
+    mkdir -p /tmp/$tmpDir/$projectDir
+    whoami=`whoami`
 
-cd ../$projectDir
+    echo $whoami
+    sudo chown -R $whoami:$whoami /tmp/$tmpDir/
 
-cp ./setup.py /tmp/$tmpDir/setup.py
+    cd ../$projectDir
 
-cp -r ./* /tmp/$tmpDir/$projectDir
+    cp ./setup.py /tmp/$tmpDir/setup.py
 
-cd /tmp/$tmpDir/
+    cp -r ./* /tmp/$tmpDir/$projectDir
 
-echo "" > $projectDir.py
+    cd /tmp/$tmpDir/
 
-if [ $whoami = 'root' ];then
-    $python27 ./setup.py install
-else
-    sudo -E bash -c "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib; $python27 ./setup.py install"
-fi
+    echo "" > $projectDir.py
 
-sudo rm -rf /tmp/$tmpDir
+    if [ $whoami = 'root' ];then
+        $pythonInterpreter ./setup.py install --prefix /usr
+    else
+        sudo -E bash -c "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib; $pythonInterpreter ./setup.py install"
+    fi
+
+    sudo rm -rf /tmp/$tmpDir
+    popd
+done

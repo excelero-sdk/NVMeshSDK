@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+from builtins import object
 import logging
 import os
+from future.utils import with_metaclass
 
 
 class IterableEnumMeta(type):
@@ -27,74 +29,12 @@ class StaticClass(object):
         raise Exception('Cannot instantiate Static Class {0}'.format(cls.__name__))
 
 
-class Enum(StaticClass):
-    __metaclass__ = IterableEnumMeta
+class Enum(with_metaclass(IterableEnumMeta, StaticClass)):
+    pass
 
 
-BASE = '/opt/infraClient'
-LOCAL_TEST_DIR = '/opt/infraClient'
-
-DEFAULT_SSH_USER = 'orchestrator'
-EXCELERO_REPOS_URL = 'https://excelero:excelero1234@repo.excelero.com/repos/{}/redhat/{}/'
 SYSLOG_PATH = '/dev/log'
-TEST_REPOSITORY_DIR = '{}/testRepository/'.format(BASE)
-SIMULATOR_DIR = '{}/Simulators/'.format(BASE)
-COMMON_DIR = '{}/common'.format(BASE)
-LOCAL_UTILS_DIR = '{}/utils'.format(LOCAL_TEST_DIR)
-TEST_UTILS_SCRIPTS = '{}/utils/scripts/'.format(BASE)
-TEST_UTILS_NETWORK = '{}/utils/network/'.format(BASE)
-TEST_UTILS_CONF = '{}/utils/configurations/'.format(BASE)
-NVMESH_SRC = '/tmp/infraClient/nvmesh'
-BLOCK_UNITEST_DIR = NVMESH_SRC + '/clnt/block/unitest/'
-PERF_TEST_UNITEST_DIR = NVMESH_SRC + '/perfTest/io_stress'
-UNSAFE_DETACH = '/sys/module/nvmeibc/parameters/allow_unsafe_detach'
-BTEST_PATH = '/bin/infraClient/utils/btestEX'
-FIO_PATH = '/bin/infraClient/utils/fio'
-CMP_BLOCKS_PATH = '/bin/infraClient/utils/cmp_blocks'
-REPORTER_SOCKET_PATH = '/var/opt/infraClient/reporter.sock'
-KILL_TOMA_JSON_FILE = 'killTomaDB.json'
-
-OLD_NVMESH_FORMAT_PATH = '/usr/bin/nvmesh_format.py'
-NVMESH_FORMAT_PATH = '/opt/NVMesh/target-repo/scripts/nvmesh_format.py'
-NVMESH_SERVICE_NEW_PATH = '/opt/NVMesh/target-repo/services'
-NVMESH_SERVICE_OLD_PATH = '/etc/init.d'
-TOMA_LEADER_NAME_OLD_PATH = '/var/log/NVMesh/toma_leader_name'
-TOMA_LEADER_NAME_NEW_PATH = '/proc/nvmeibs/toma_status/leader'
-
-DEFAULT_IPMI_USER = 'ADMIN'
-DEFAULT_IPMI_PASS = 'ADMIN'
-
-SERVICE_INIT_PATH = '/etc/init.d/'
-
-
-class TestStatuses(Enum):
-    NOT_STARTED = 'NOT_STARTED'
-    STARTED = 'STARTED'
-    RUNNING = 'RUNNING'
-    WARNING = 'WARNING'
-    PASSED = 'PASSED'
-    FAILED = 'FAILED'
-    TIMEOUT = 'TIMEOUT'
-    ABORTED = 'ABORTED'
-    FATAL = 'FATAL'
-    _FINISHED_STATUSES = [PASSED, FAILED, TIMEOUT, ABORTED, FATAL]
-
-    @staticmethod
-    def finishedStatuses():
-        return TestStatuses._FINISHED_STATUSES
-
-
-class ConfigStatuses(Enum):
-    READY = 'READY'
-    CONFIGURATION_IN_PROGRESS = 'CONFIGURATION_IN_PROGRESS'
-    CONFIGURATION_FAILED = 'CONFIGURATION_FAILED'
-    POST_MORTEM = 'POST_MORTEM'
-
-
-class ContentType(Enum):
-    JSON = 'application/json'
-    TAR_ARCHIVE = 'application/x-tar'
-    HTML = 'text/html'
+DEFAULT_UNIT_TYPE = 'binary'
 
 
 class ComponentStatus(Enum):
@@ -110,12 +50,6 @@ class EcSeparationTypes(Enum):
     IGNORE = 'Ignore Separation'
 
 
-class MkfsTypes(Enum):
-    EXT3 = 'ext3'
-    EXT4 = 'ext4'
-    XFS = 'xfs'
-    BTRFS = 'btrfs'
-
 
 class NVMeshService(Enum):
     NVMESH_TARGET = 'nvmeshtarget'
@@ -125,21 +59,6 @@ class NVMeshService(Enum):
     CLIENT_KERNEL_MODULE = 'nvmeibc'
     NVMESH_MANAGEMENT = 'nvmeshmgr'
     INFRA_CLIENT = 'infraclient'
-
-
-class NVMeshPackageName(Enum):
-    TARGET = 'NVMesh-target'
-    CLIENT = 'NVMesh-client'
-    CORE = 'nvmesh-core'
-    MANAGEMENT = 'nvmesh-management'
-    # this is to support current branches before the RPM rename - after a small integration phase, it should be removed
-    MANAGEMENT_OLD = 'NVMesh-management'
-
-
-class NVMeshServiceInitPath(Enum):
-    NVMESH_TARGET_FILE = os.path.join(SERVICE_INIT_PATH, NVMeshService.NVMESH_TARGET)
-    NVMESH_CLIENT_FILE = os.path.join(SERVICE_INIT_PATH, NVMeshService.NVMESH_CLIENT)
-    NVMESH_MGMT_FILE = os.path.join(SERVICE_INIT_PATH, NVMeshService.NVMESH_MANAGEMENT)
 
 
 class NVMeshPid(Enum):
@@ -441,7 +360,7 @@ class SimulatorTestStatus(Enum):
     FAILED = 1
 
 
-class SocketPathes:
+class SocketPathes(object):
     SOCKET_FILE_PATH = '/var/run/NVMesh/json_uds'
 
 
@@ -502,10 +421,11 @@ class EndpointRoutes(Enum):
     MONGO_DB = 'mongoDB'
     KEYS = 'keys'
     VolumeSecurityGroups = 'volumeSecurityGroups'
+    NVMESH_METADATA = 'nvmeshMetadata'
     INDEX = '/'
 
 
-class CLI:
+class CLI(object):
     ITERATOR_THRESHOLD = 50
     RESULTS_ITERATOR_CONT = 'it'
     RESULTS_ITERATOR_QUIT = 'q'
@@ -532,7 +452,12 @@ class RAIDLevels(Enum):
     MIRRORED_RAID_1 = 'Mirrored RAID-1'
     STRIPED_AND_MIRRORED_RAID_10 = 'Striped & Mirrored RAID-10'
     ERASURE_CODING = 'Erasure Coding'
+    ELECT = 'ELECT'
 
+class VolumeTypes(Enum):
+    WCV = 'WCV'
+    MDV = 'MDV'
+    QLC = 'QLC'
 
 class VolumeDefaults(Enum):
     STRIPE_SIZE = 32

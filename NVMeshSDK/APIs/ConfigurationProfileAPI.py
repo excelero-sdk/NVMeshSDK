@@ -46,7 +46,9 @@ class ConfigurationProfileAPI(BaseClassAPI):
                         "IPV4_ONLY": true,
                         "MANAGEMENT_PROTOCOL": "https",
                         "MCS_LOGGING_LEVEL": "INFO",
-                        "MLX5_RDDA_ENABLED": true
+                        "MLX5_RDDA_ENABLED": true,
+                        "MAX_STATISTICS_SAMPLERS_PER_THREAD": 100
+
                     },
                     "createdBy": "admin@excelero.com",
                     "dateCreated": "2019-10-30T14:08:36.777Z",
@@ -255,7 +257,9 @@ class ConfigurationProfileAPI(BaseClassAPI):
                         "IPV4_ONLY": true,
                         "MANAGEMENT_PROTOCOL": "https",
                         "MCS_LOGGING_LEVEL": "INFO",
-                        "MLX5_RDDA_ENABLED": true
+                        "MLX5_RDDA_ENABLED": true,
+                        "MAX_STATISTICS_SAMPLERS_PER_THREAD": 100
+
                     },
                     "createdBy": "admin@excelero.com",
                     "dateCreated": "2019-11-01T08:19:47.243Z",

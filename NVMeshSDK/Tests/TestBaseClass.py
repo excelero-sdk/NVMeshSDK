@@ -1,4 +1,4 @@
-from NVMeshSDK import LoggerUtils
+from NVMeshSDK.LoggerUtils import Logger
 from NVMeshSDK.Entities.Entity import Entity
 
 import unittest
@@ -16,7 +16,7 @@ class TestBaseClass(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.className = cls.__name__
-        cls.logger = LoggerUtils.getNVMeshSDKLogger(cls.className)
+        cls.logger = Logger().getLogger(cls.className)
         cls.myAPI = cls.getAPI()
 
         try:

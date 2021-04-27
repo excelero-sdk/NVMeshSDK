@@ -428,6 +428,9 @@ class UserAPI(BaseClassAPI):
 
         return self.makePost(['update'], users)
 
+    def acceptEula(self, signature):
+        return self.makePost(['acceptEula'], {'eulaSignature': signature})
+
     @classmethod
     def getEndpointRoute(cls):
         return cls.endpointRoute

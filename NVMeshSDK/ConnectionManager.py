@@ -1,7 +1,11 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 import json
 import requests
 import urllib3
-import urlparse
+import urllib.parse
 import random
 import time
 from logging import DEBUG, INFO, WARNING
@@ -12,7 +16,7 @@ from NVMeshSDK.Utils import Utils
 urllib3.disable_warnings()
 
 
-class RandomSleepTime:
+class RandomSleepTime(object):
     def __init__(self, start, stop, precision=2):
         self.start = start
         self.stop = stop
@@ -42,7 +46,7 @@ class ManagementHTTPError(ConnectionManagerError):
         self.message = "Reason:{0} Content:{1}".format(res.reason, res.content)
 
 
-class ConnectionManager:
+class ConnectionManager(object):
     DEFAULT_USERNAME = "app@excelero.com"
     DEFAULT_PASSWORD = "admin"
     DEFAULT_NVMESH_CONFIG_FILE = '/etc/opt/NVMesh/nvmesh.conf'
@@ -75,6 +79,7 @@ class ConnectionManager:
                 self.setManagementServers(managementServers)
 
             self.managementSetConfigs()
+            self.managementServers = [str(server) for server in self.managementServers]
 
             self.logger = (logger if logger else self.setLogger()).getLogger('ConnectionManager')
             self.currentMgmtIndex = self.getInititalMgmtIndex()
@@ -106,7 +111,7 @@ class ConnectionManager:
         configs = Utils.readConfFile(self.configFile)
 
         if not configs:
-            print 'Failed to open the configuration file: {}, all configuration are set to the default.'.format(self.configFile)
+            print('Failed to open the configuration file: {}, all configuration are set to the default.'.format(self.configFile))
             if not self.managementServers:
                 self.managementServers = ['https://localhost:4000']
         else:
@@ -185,6 +190,7 @@ class ConnectionManager:
             raise ex
 
     def doRequest(self, method, route, payload=None, postTimeout=None, numberOfRetries=0):
+        IS_ALIVE_TIMEOUT = 1
         isAliveRoute = route == '/isAlive'
         volumeSaveRoute = 'volumes/save' in route
         isDebug = self.logLevel == 'DEBUG'
@@ -200,7 +206,7 @@ class ConnectionManager:
                     format(method, route, payload, postTimeout, numberOfRetries))
         url = ''
         try:
-            url = urlparse.urljoin(self.managementServer, route)
+            url = urllib.parse.urljoin(self.managementServer, route)
             if method == 'post':
                 if isDebug and volumeSaveRoute:
                     startTime = time.time()
@@ -211,7 +217,7 @@ class ConnectionManager:
                     err, jsonObject = self.handleResponse(res)
                     self.logger.debug("id: {0}, err: {1}, res: {2}, it took me: {3}ms to save".format(volName, err, json.dumps(jsonObject), execTime))
             elif method == 'get':
-                res = self.session.get(url, params=payload, verify=False, timeout=self.httpRequestTimeout)
+                res = self.session.get(url, params=payload, verify=False, timeout=IS_ALIVE_TIMEOUT if isAliveRoute else self.httpRequestTimeout)
 
             if '/login' in res.text:
                 res = self.login()
@@ -241,7 +247,7 @@ class ConnectionManager:
                 self.logger.debug("Request to {0} failed, ex: {1}".format(route, ex))
 
             if isAliveRoute:
-                raise ManagementTimeout(url, ex.message)
+                raise ManagementTimeout(url, str(ex))
             elif numberOfRetries < self.maxHttpRequestRetries:
                 numberOfRetries += 1
                 sleepTimeBetweenRequestRetry = self.randomSleepBetweenRequests.getValue()
@@ -254,7 +260,7 @@ class ConnectionManager:
                 self.logger.debug("Request to {0}, failed {1} times. Trying to change management server.".format(route, self.maxHttpRequestRetries))
                 isAlive = self.isAlive()
                 if not isAlive:
-                    raise ManagementTimeout(url, ex.message)
+                    raise ManagementTimeout(url, str(ex))
                 else:
                     return self.request(method, route, payload, postTimeout, numberOfRetries=0)
 
@@ -270,7 +276,7 @@ class ConnectionManager:
             except Exception as ex:
                 err = {
                     "code": res.status_code,
-                    "message": ex.message,
+                    "message": str(ex),
                     "content": res.content
                 }
         else:
@@ -288,4 +294,4 @@ class ConnectionManager:
                               data={"username": self.user, "password": self.password}, verify=False, timeout=self.httpRequestTimeout)
             return out
         except requests.ConnectionError as ex:
-            raise ManagementTimeout(self.managementServer, ex.message)
+            raise ManagementTimeout(self.managementServer, str(ex))

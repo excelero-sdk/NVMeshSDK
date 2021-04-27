@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+from __future__ import division, unicode_literals
+from past.builtins import execfile
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip, object
+from past.utils import old_div
 from functools import wraps
 import inspect
 import json
@@ -7,10 +13,10 @@ import datetime
 import re
 import subprocess
 import os
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 
-class Utils:
+class Utils(object):
 
     @staticmethod
     def initializer(func):
@@ -27,7 +33,7 @@ class Utils:
                     if default is not None:
                         setattr(self, name, default)
 
-            filteredKargs = {k: v for k, v in kargs.iteritems() if k in names}
+            filteredKargs = {k: v for k, v in kargs.items() if k in names}
             func(self, *args, **filteredKargs)
 
         wrapper.argSpec = argSpec
@@ -43,7 +49,7 @@ class Utils:
         query = '?'
         isFirstParam = True
 
-        for paramName, paramValue in queryParams.iteritems():
+        for paramName, paramValue in queryParams.items():
             if paramValue is not None:
                 if not isFirstParam:
                     query += '&'
@@ -58,6 +64,14 @@ class Utils:
         return query
 
     @staticmethod
+    def isStr(s):
+        try:
+            basestring  # attempt to evaluate basestring -> PY2
+            return isinstance(s, basestring)
+        except NameError: # PY3
+            return isinstance(s, str)
+
+    @staticmethod
     def convertUnitCapacityToBytes(unitCapacity):
         def getMultipleOfBytesType(unitCapacity):
             binary = 1024
@@ -67,7 +81,7 @@ class Utils:
         def getFactor(termFirstLetter):
             return {'k': 1, 'm': 2, 'g': 3, 't': 4, 'p': 5}[termFirstLetter]
 
-        if type(unitCapacity) not in (unicode, str) or unitCapacity.lower() == 'max':
+        if not Utils.isStr(unitCapacity) or unitCapacity.lower() == 'max':
             return unitCapacity
 
         unitCapacity = unitCapacity.lower()
@@ -81,8 +95,8 @@ class Utils:
         return float(value) * multipleOfBytesType ** factor
 
     @staticmethod
-    def convertBytesToUnit(bytes):
-        def getUnitType(multiplier):
+    def convertBytesToUnit(bytes, isBinary=True):
+        def getUnitType(multiplier, isBinary):
             if multiplier == 1:
                 unitType = 'KiB'
             elif multiplier == 2:
@@ -94,24 +108,25 @@ class Utils:
             else:
                 unitType = 'PiB'
 
-            return unitType
+            return unitType.replace('i', '') if not isBinary else unitType
 
-        if not isinstance(bytes, (int, long, float)):
+        if not isinstance(bytes, (int, int, float)):
             return bytes
 
         counter = 0
         someUnits = bytes
 
-        while someUnits / 1000 >= 1:
+        while old_div(someUnits, 1000) >= 1:
             counter += 1
             someUnits /= 1000
 
         if counter == 0:
             return str(bytes) + 'B'
         else:
-            division = float(bytes) / float(1024 ** counter)
+            unitFactor = 1024 if isBinary else 1000
+            division = float(bytes) / float(unitFactor ** counter)
 
-            return str(round(((division * 100) / 100), 2)) + getUnitType(counter)
+            return str(round((old_div((division * 100), 100)), 2)) + getUnitType(counter, isBinary)
 
     @staticmethod
     def executeLocalCommand(command):
@@ -156,4 +171,4 @@ class Utils:
 
     @staticmethod
     def encodePlusInRoute(route):
-        return ''.join(map(lambda c: urllib.quote('+') if c == '+' else c, list(route))) if '+' in route else route
+        return ''.join([urllib.parse.quote('+') if c == '+' else c for c in list(route)]) if '+' in route else route

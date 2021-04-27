@@ -13,10 +13,13 @@ setup(
     author_email='info@excelero.com',
     classifiers=[
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6'
     ],
+    use_2to3=True,
     packages=['NVMeshSDK','NVMeshSDK.APIs','NVMeshSDK.Entities'],
     install_requires=[
                       'requests',
-                      'urllib3'],
+                      'urllib3',
+                      'future'],
 
 )

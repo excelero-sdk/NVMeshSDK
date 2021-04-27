@@ -30,6 +30,7 @@ class Volume(Entity):
             * EnableNVMf
             * EnableCrcCheck
             * VSGs
+            * Type
     """
     Id = AttributeRepresentation(display='Name', dbKey='name')
     Health = AttributeRepresentation(display='Health', dbKey='health')
@@ -55,14 +56,19 @@ class Volume(Entity):
     LimitByDrive = AttributeRepresentation(display='Limit by drives', dbKey='limitByDisks')
     LimitByTarget = AttributeRepresentation(display='Limit by targets', dbKey='limitByNodes')
     VSGs = AttributeRepresentation(display='VSGs', dbKey='VSGs')
-    __objectsToInstantiate = ['Chunks', 'Reservation']
+    Type = AttributeRepresentation(display='Type', dbKey='type')
+    # WCVName = AttributeRepresentation(display='Write Cache Volume', dbKey='wcvName')
+    # WCVUUID = AttributeRepresentation(display='Write Cache Volume UUID', dbKey='wcvUUID')
+    # MDV = AttributeRepresentation(display='Metadata Volume', dbKey='mdv', type='self')
+    # QLCUUID = AttributeRepresentation(display='MTV UUID', dbKey='qlcUUID')
+    __objectsToInstantiate = ['Chunks', 'Reservation'] #, 'MDV']
 
     @Utils.initializer
     def __init__(self, name=None, RAIDLevel=None, capacity=None, VPG=None, _id=None, relativeRebuildPriority=None, description=None, diskClasses=None, serverClasses=None,
                  limitByDisks=None, limitByNodes=None, numberOfMirrors=None, createdBy=None, modifiedBy=None, dateModified=None, dateCreated=None, isReserved=None,
                  status=None, blocks=None, chunks=None, stripeSize=None, stripeWidth=None, dataBlocks=None, parityBlocks=None, protectionLevel=None, domain=None,
                  uuid=None, blockSize=None, version=None, type=None, health=None, lockServer=None, reservation=None, ignoreNodeSeparation=None, selectedClientsForNvmf=None,
-                 enableNVMf=None, action=None, enableCrcCheck=None, VSGs=None, use_debug_di=None):
+                 enableNVMf=None, action=None, enableCrcCheck=None, VSGs=None, use_debug_di=None): #, wcvName=None, wcvUUID=None, mdv=None, ownerVolumeID=None, qlcUUID=None):
         """**Initializes volume entity**
 
                 :param name: the name of the volume

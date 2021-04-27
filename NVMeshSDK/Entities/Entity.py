@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from builtins import object
 from NVMeshSDK.Utils import Utils
 
 import json
@@ -64,11 +65,14 @@ class Entity(object):
 
                     setattr(self, entityRep.dbKey, listOfInstances)
                 else:
-                    setattr(self, entityRep.dbKey, entityRep.type(**attrValue))
+                    setattr(
+                        self, entityRep.dbKey,
+                        self.__class__(**attrValue).instantiate() if entityRep.type == 'self' else entityRep.type(**attrValue)
+                    )
         return self
 
     def filterNoneValues(self):
-        return {k: v for k, v in self.__dict__.iteritems() if v is not None}
+        return {k: v for k, v in self.__dict__.items() if v is not None}
 
     def getObjectsToInstantiate(self):
         return []

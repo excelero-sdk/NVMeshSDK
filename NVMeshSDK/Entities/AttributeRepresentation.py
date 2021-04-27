@@ -1,3 +1,4 @@
+from builtins import object
 class AttributeRepresentation(object):
     def __init__(self, display, dbKey, type=None):
         self.display = display

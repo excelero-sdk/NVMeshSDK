@@ -24,7 +24,7 @@ class ConfigurationProfile(Entity):
 	ModifiedBy = AttributeRepresentation(display='Modified By', dbKey='modifiedBy')
 
 	@Utils.initializer
-	def __init__(self, name, _id=None, description=None, labels=None, hosts=None, config=None, version=None, modifiedBy=None, createdBy=None, dateModified=None, dateCreated=None, deleteNotAllowed=None, editNotAllowed=None):
+	def __init__(self, name=None, _id=None, description=None, labels=None, hosts=None, config=None, version=None, modifiedBy=None, createdBy=None, dateModified=None, dateCreated=None, deleteNotAllowed=None, editNotAllowed=None):
 		"""**Initializes configuration profile entity**
 
 		:param _id: the id of the configuration profile

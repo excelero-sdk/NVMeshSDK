@@ -3,6 +3,7 @@
    :synopsis: All the base API functions are defined here
 .. moduleauthor:: Excelero
 """
+from builtins import object
 from NVMeshSDK.ConnectionManager import ConnectionManager, ConnectionManagerError
 from NVMeshSDK.Entities.Entity import Entity
 from NVMeshSDK.Utils import Utils
@@ -47,6 +48,9 @@ class BaseClassAPI(object):
         err, out = self.makeGet(routes)
 
         if out is not None:
+            if not isinstance(out, list):
+                out = [out]
+
             enteties = [self.getType()(**result) for result in out]
             for entity in enteties:
                 entity.deserialize()
